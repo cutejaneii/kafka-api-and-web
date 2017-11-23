@@ -171,7 +171,7 @@ def AddMessage():
 
 		if not (CheckTopicExsited(topic)):
 			api_message.message="Topic ("+ topic +") cannot be found! It may have not been created."
-			api_message.code=99
+			api_message.code=100
 		else:
 			producer = KafkaProducer(bootstrap_servers=tmpbootstrap_servers)
 			producer.send(topic, input_data)	
@@ -198,7 +198,8 @@ def Consuming():
 		topic = request.json['topic'].encode('utf-8')+'_error_msg'
 
 		if not (CheckTopicExsited(topic)):
-			result.message="Topic cannot be found! This may have not been created."			
+			result.message="Topic ("+ topic +") cannot be found! It may have not been created."
+			result.code=100		
 		else:
 			result = getMsgData(topic, group, result)	
 
