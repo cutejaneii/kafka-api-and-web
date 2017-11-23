@@ -8,36 +8,38 @@
 <h4><font color='green'>1. 建立topic</font></h4>
 進入<a href='/add_topic'>add_topic</a>頁面，輸入topic，系統建立topic, topic_error_msg, topic_error_msg_log 共3個 topic<BR><BR>
 <font color='gray'>．輸入topic，按下submit</font><BR>
-<img border='1' src='{{ url_for('static', filename='img01-01.png')}}'><BR>
-<font color='gray'>．顯示成功</font><BR>
-<img border='1' src='{{ url_for('static', filename='img01-02.png')}}'><BR>
-<font color='gray'>．已產生三個對應的topic</font><BR>
-<img border='1' src='{{ url_for('static', filename='img01-03.png')}}'><BR><BR>
+<img border='1' src='{{ url_for('static', filename='new-img01.png')}}'><BR>
+<font color='gray'>．顯示成功，已產生三個對應的topic</font><BR>
+<img border='1' src='{{ url_for('static', filename='new-img02.png')}}'><BR>
+
 <h4><font color='green'>2. 正常處理message，若有錯誤時呼叫input_error_msg，將message新增至topic_error_msg這個topic中</font></h4>
 呼叫方法：post<BR>
 呼叫路徑：/input_error_msg<BR>
 輸入：<BR>
 需加入Header～ Content-Type: application/json<BR>
-<img border='1' src='{{ url_for('static', filename='img02-01.png')}}'><BR>
+<img border='1' src='{{ url_for('static', filename='step02-01.png')}}'><BR>
 輸出：<BR>
 <font color='gray'>．若成功，回傳ok，且status code為200</font><BR>
-<img border='1' src='{{ url_for('static', filename='new-response-ok.png')}}'><BR>
+<img border='1' src='{{ url_for('static', filename='step02-02-ok.png')}}'><BR>
 <font color='gray'>．資料已成功新增至topic_error_msg</font><BR>
-<img border='1' src='{{ url_for('static', filename='img02-03.png')}}'><BR>
+<img border='1' src='{{ url_for('static', filename='step02-03.png')}}'><BR>
 
 <font color='gray'>．若失敗，回傳錯誤訊息，且status code為500</font><BR>
 <img border='1' src='{{ url_for('static', filename='new-response-error-result.png')}}'><BR>
 
+<font color='gray'>．若Topic不存在，會顯示topic not found!</font><BR>
+<img border='1' src='{{ url_for('static', filename='step02-02-topic_not_found.png')}}'><BR>  
+  
 <h4><font color='green'>3. 從topic_error_msg中取得"未處理的message"</font></h4>
 呼叫方法：post<BR>
 呼叫路徑：/receive_error_msg<BR>
 輸入：<BR>
 需加入Header～ Content-Type: application/json<BR>
 <font color='graay'>．需自定consumer，例如 qpass-consumer，並傳入group參數中</font><BR>
-<img border='1' src='{{ url_for('static', filename='img03-01.png')}}'><BR>
+<img border='1' src='{{ url_for('static', filename='step03-01.png')}}'><BR>
 輸出：<BR>
 <font color='gray'>．取得"未處理的message"，並得到一組guid</font><BR>
-<img border='1' src='{{ url_for('static', filename='img03-02.png')}}'><BR>
+<img border='1' src='{{ url_for('static', filename='step03-02.png')}}'><BR>
   
 <font color='gray'>．若Topic不存在，會顯示topic not found!</font><BR>
 <img border='1' src='{{ url_for('static', filename='new-response-error-receivemsg-topicnotfound.png')}}'><BR>
@@ -49,10 +51,10 @@
 輸入：<BR>
 需加入Header～ Content-Type: application/json<BR>
 <font color='gray'>．傳入guid，系統會比對"當時取得的最後一筆資料"，並進行commit</font><BR>
-<img border='1' src='{{ url_for('static', filename='img04-01.png')}}'><BR>
+<img border='1' src='{{ url_for('static', filename='step04-01.png')}}'><BR>
 輸出：<BR>
 <font color='gray'>．若成功，回傳ok，且status code為200</font><BR>
-<img border='1' src='{{ url_for('static', filename='ok.png')}}'><BR>
+<img border='1' src='{{ url_for('static', filename='step02-02-ok.png')}}'><BR>
 
 
 <BR>
