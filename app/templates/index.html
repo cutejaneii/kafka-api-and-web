@@ -28,7 +28,7 @@
 <img border='1' src='{{ url_for('static', filename='new-response-error-result.png')}}'><BR>
 
 <font color='gray'>．若Topic不存在，會顯示topic not found!</font><BR>
-<img border='1' src='{{ url_for('static', filename='step02-02-topic_not_found.png')}}'><BR>  
+<img border='1' src='{{ url_for('static', filename='topic_not_found.png')}}'><BR>  
   
 <h4><font color='green'>3. 從topic_error_msg中取得"未處理的message"</font></h4>
 呼叫方法：post<BR>
@@ -42,7 +42,7 @@
 <img border='1' src='{{ url_for('static', filename='step03-02.png')}}'><BR>
   
 <font color='gray'>．若Topic不存在，會顯示topic not found!</font><BR>
-<img border='1' src='{{ url_for('static', filename='new-response-error-receivemsg-topicnotfound.png')}}'><BR>
+<img border='1' src='{{ url_for('static', filename='topic_not_found.png')}}'><BR>
   
 <h4><font color='green'>4. 對"已完成處理的message"，進行commit，需傳入 "呼叫/receive_error_msg" 取得的guid</font></h4>
 <font color='gray'>*在未commit前，error_msg的資料可利用呼叫/receive_error_msg 多次取出</font><BR>
