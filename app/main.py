@@ -80,6 +80,7 @@ def GetConfigBrokers():
 tmpbootstrap_servers = GetConfigBrokers()
 kafkaclient = KafkaClient(tmpbootstrap_servers)
 
+# Logging
 logging.basicConfig(level=logging.DEBUG)
 logging.debug('Debug...')
 
@@ -148,11 +149,19 @@ def submit_add_topic():
                 group = topic + '-consumer'
 
                 consumer2 = KafkaConsumer(bootstrap_servers=tmpbootstrap_servers, enable_auto_commit=False, group_id=group)
-                tp = TopicPartition('api_log',0)
-                consumer2.commit({
-                tp: OffsetAndMetadata(0, None)
-                })
+                try:
+                        consumer2.subscribe([topic,topic+'_error_msg',topic+'_error_msg_log'])
+                        tp = TopicPartition('api_log',0)
+                        consumer2.commit({
+                        tp: OffsetAndMetadata(0, None)
+                        })
+                        #consumer2.subscribe([topic,topic+'_error_msg',topic+'_error_msg_log'])
+                except Exception as ex:
+                        print('error when create consumer2.....')
+                        print(str(ex))
+                        consumer2.close()
 
+                consumer2.close()
                 message = message + "<h4>Success to add 3 topics!</B></h4>"
                 message = message + "1. " + topic + "<BR>"
                 message = message + "2. " + topic + "_error_msg<BR>"
