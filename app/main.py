@@ -250,7 +250,7 @@ def CommitData():
                 if not (CheckTopicExsited(topic)):
                         return "Topic cannot be found! This may have not been created.",200
 
-                client3 = KafkaClient("192.168.95.127:9092")
+                client3 = KafkaClient(tmpbootstrap_servers)
                 simplecon = SimpleConsumer(client3, group, topic, auto_commit=False)
                 simplecon_messages = simplecon.get_messages(count=20)
 
