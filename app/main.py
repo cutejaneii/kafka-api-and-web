@@ -112,7 +112,7 @@ def help():
                         info2 = json.dumps(info, default=encode_routingInfo, ensure_ascii=False)
 
                         func_list.append(info2)
-        htmlcode = htmlcode + "<hr><a href='/'>Back to index</a><BR><a href='/add_topic'>go to add topic</a>"
+        htmlcode = htmlcode + "<hr><a href='index'>Back to index</a><BR><a href='add_topic'>go to add topic</a>"
 
         return htmlcode
         #return json.dumps(func_list, ensure_ascii=False)
@@ -120,6 +120,7 @@ def help():
 # Get方法
 # 回傳hello訊息e
 @app.route('/', methods=['GET'])
+@app.route('/index', methods=['GET'])
 def index():
         """ 程式說明及步驟"""
         return render_template('index.html')
@@ -171,8 +172,8 @@ def submit_add_topic():
                 message = message + "<B>Fail to add topic : " + topic + "<B><BR>Detail:"
                 message = message + str(e)
 
-                message = message + "<hr><a href='/index'>Back to index</a><BR>"
-        message = message + "<a href='/help'>help</a>"
+                message = message + "<hr><a href='index'>Back to index</a><BR>"
+        message = message + "<a href='help'>help</a>"
 
         return message
 
@@ -352,7 +353,7 @@ def getMsgData(topic, group, result):
                 saveResult.message="Success"
                 saveResult.Code=200
 
-                producer = KafkaProducer(bootstrap_servers=['192.168.95.127:9092'])
+                producer = KafkaProducer(bootstrap_servers=[tmpbootstrap_servers])
                 producer.send(topic+"_log", json.dumps(saveResult, default=encode_SaveDataResult))
                 producer.flush()
 
