@@ -133,7 +133,7 @@ def add_topic_html():
         return render_template('add_topic.html')
 
 # submit，取得使用者資料並建立topic
-@app.route('add_topic', methods=['POST'])
+@app.route('/add_topic', methods=['POST'])
 def submit_add_topic():
         """在add_topic頁面按下submit後的動作，取得使用者填寫的資料並建立topic"""
         try:
