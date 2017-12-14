@@ -152,11 +152,6 @@ def submit_add_topic():
                 consumer2 = KafkaConsumer(bootstrap_servers=tmpbootstrap_servers, enable_auto_commit=False, group_id=group)
                 try:
                         consumer2.subscribe([topic,topic+'_error_msg',topic+'_error_msg_log'])
-                        tp = TopicPartition('api_log',0)
-                        consumer2.commit({
-                        tp: OffsetAndMetadata(0, None)
-                        })
-                        #consumer2.subscribe([topic,topic+'_error_msg',topic+'_error_msg_log'])
                 except Exception as ex:
                         print('error when create consumer2.....')
                         print(str(ex))
