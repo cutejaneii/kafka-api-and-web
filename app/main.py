@@ -348,14 +348,15 @@ def getMsgData(topic, group, result):
                 saveResult.message="Success"
                 saveResult.Code=200
 
-                producer = KafkaProducer(bootstrap_servers=[tmpbootstrap_servers])
+                producer = KafkaProducer(bootstrap_servers=tmpbootstrap_servers)
                 producer.send(topic+"_log", json.dumps(saveResult, default=encode_SaveDataResult))
-                producer.flush()
+                producer.flush()                
 
         except Exception as e:
                 result.message=str(e)
                 result.code=500
         finally:
+                result.code=200
                 return result
 
 
