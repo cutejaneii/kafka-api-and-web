@@ -224,7 +224,7 @@ def Consuming():
                 api_statuscode=500
 
         finally:
-                return json.dumps(result, default=encode_ReceiveDataResult),api_statuscode
+                return json.dumps(result, default=encode_ReceiveDataResult, ensure_ascii=False),api_statuscode
 
 
 @app.route('/commit_error_msg', methods=['POST'])
