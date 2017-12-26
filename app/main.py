@@ -81,8 +81,8 @@ tmpbootstrap_servers = GetConfigBrokers()
 kafkaclient = KafkaClient(tmpbootstrap_servers)
 
 # Logging
-logging.basicConfig(level=logging.DEBUG)
-logging.debug('Debug...')
+#logging.basicConfig(level=logging.DEBUG)
+#logging.debug('Debug...')
 
 @app.route('/help', methods = ['GET'])
 def help():
@@ -140,28 +140,13 @@ def submit_add_topic():
                 message="<h3>Result</h3>"
                 topic = request.form.get("input_topic")
 
-                print(topic)
                 producer = KafkaProducer(bootstrap_servers=tmpbootstrap_servers)
                 par = producer.partitions_for(topic)
-                par = producer.partitions_for(topic+'_error_msg')
-                par = producer.partitions_for(topic+'_error_msg_log')
                 producer.flush()
 
-                group = topic + '-consumer'
-
-                consumer2 = KafkaConsumer(bootstrap_servers=tmpbootstrap_servers, enable_auto_commit=False, group_id=group)
-                try:
-                        consumer2.subscribe([topic,topic+'_error_msg',topic+'_error_msg_log'])
-                except Exception as ex:
-                        print('error when create consumer2.....')
-                        print(str(ex))
-                        consumer2.close()
-
                 consumer2.close()
-                message = message + "<h4>Success to add 3 topics!</B></h4>"
-                message = message + "1. " + topic + "<BR>"
-                message = message + "2. " + topic + "_error_msg<BR>"
-                message = message + "3. " + topic + "_error_msg_log<BR>"
+                message = message + "<h4>Success to add topic!</B></h4>"
+                message = message + "topic name: " + topic + "<BR>"
 
         except Exception as e:
                 message = message + "<B>Fail to add topic : " + topic + "<B><BR>Detail:"
@@ -217,7 +202,7 @@ def Consuming():
                         result.message="Topic ("+ topic +") cannot be found! It may have not been created."
                         result.code=100
                 else:
-                        result = getMsgData(topic, group, result)
+                        result = getMsgData(topic, group, result, 50)
 
         except Exception as e:
                 result.message = str(e)
@@ -231,45 +216,48 @@ def Consuming():
 def CommitData():
 
         """API: 呼叫時提供topic, guid, group，API會依照guid查詢當初取資料時的last offset，並依last offset 對 topic 進行 Commit"""
-        api_message=""
-        api_statuscode=200
-        try:
+        api_message = ExecuteResult()
+        api_message.message='ok'
+        api_statuscode = 200
 
+        try:
                 original_topic = request.json['topic'].encode('utf-8')+'_error_msg'
                 topic = request.json['topic'].encode('utf-8')+'_error_msg_log'
                 guid = request.json['guid'].encode('utf-8')
                 group = request.json['group'].encode('utf-8')
-                print(topic)
-                print(guid)
-                print(group)
 
                 if not (CheckTopicExsited(topic)):
                         return "Topic cannot be found! This may have not been created.",200
 
                 client3 = KafkaClient(tmpbootstrap_servers)
                 simplecon = SimpleConsumer(client3, group, topic, auto_commit=False)
-                simplecon_messages = simplecon.get_messages(count=20)
+                simplecon_messages = simplecon.get_messages(count=500)
+
+                ii = 0
 
                 for msg in simplecon_messages:
                         msgGuid = getMsgDataGuid(msg.message.value)
+                        ii += 1
+                        print(str(ii))
                         if msgGuid == guid:
                                 msgInfos2 = get_last_offset_data(msg.message.value)
                                 msgInfos = json.loads(msgInfos2)
                                 for offset_data in msgInfos:
                                         commitTopic(original_topic, group, int(offset_data['partition_ID']), int(offset_data['get_last_offset']))
-                api_message="ok"
 
         except Exception as e:
-                api_message=str(e)
+                api_message.message = str(e)
+                print(str(e))
                 api_statuscode=500
 
         finally:
-                return api_message,api_statuscode
+                return json.dumps(api_message, default=encode_ExecuteResult), api_statuscode
+
 
 def commitTopic(topic, group, partition, commit_offset):
         try:
-                print("[commitTopic]\n")
-                print("topic="+topic + ", group=" + group + ", partition=" + str(partition) + ", commit_offset="+str(commit_offset))
+                print('====================================================================================')
+                print('[commitTopic] : topic=' +topic + ', group=' + group + ', partition=' + str(partition) + ', commit_offset='+str(commit_offset))
                 consumer2 = KafkaConsumer(bootstrap_servers=tmpbootstrap_servers, enable_auto_commit=False, group_id=group)
                 tp = TopicPartition(topic, partition)
 
@@ -279,15 +267,14 @@ def commitTopic(topic, group, partition, commit_offset):
                                 tp: OffsetAndMetadata(commit_offset, None)
                                 })
 
-        except Exception as e:
-                print(e)
-                print('error when commitTopic')
+        except Exception as ee:
+                print('error when commit Topic')
+                print(str(ee))
         finally:
                 print('commitTopic end')
 
-def getMsgData(topic, group, result):
+def getMsgData(topic, group, result, maxsize):
         try:
-
                 saveResult = SaveDataResult()
                 saveResult.guid = str(uuid.uuid4())
                 saveResult.CreateDate = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -300,6 +287,8 @@ def getMsgData(topic, group, result):
 
                 # Get all partitions by topic
                 par = consumer.partitions_for_topic(topic)
+
+                now_count = 0
 
                 for p in par:
                         tp = TopicPartition(topic, p)
@@ -336,13 +325,15 @@ def getMsgData(topic, group, result):
                         print("[%s] partition(%s) -> now:%s,  last:%s,  committed:%s" % (tp.topic, tp.partition, now_offset, last_offset, committed))
 
                         # Get msg from position to offset
-                        while from_offset < last_offset:
+                        while (from_offset < last_offset) and (now_count < maxsize):
                                         consumer.seek(tp, from_offset)
                                         polldata=consumer.poll(100)
                                         from_offset += 1
+                                        now_count += 1
+                                        print('now_count='+str(now_count))
                                         result.topic_messages.append(polldata[tp][0].value)
 
-                saveResult.MsgInfo = json.dumps(msgInfos, default=encode_MsgPartitionInfo)
+                saveResult.MsgInfo = json.dumps(msgInfos, default=encode_MsgPartitionInfo, ensure_ascii=False)
                 print(saveResult.MsgInfo)
                 consumer.close()
                 saveResult.message="Success"
@@ -350,7 +341,7 @@ def getMsgData(topic, group, result):
 
                 producer = KafkaProducer(bootstrap_servers=tmpbootstrap_servers)
                 producer.send(topic+"_log", json.dumps(saveResult, default=encode_SaveDataResult))
-                producer.flush()                
+                producer.flush()
 
         except Exception as e:
                 result.message=str(e)
@@ -384,3 +375,4 @@ def CheckTopicExsited(topic):
 
 if __name__ ==  '__main__':
         app.run(debug=True, host='0.0.0.0', port=50001)
+
